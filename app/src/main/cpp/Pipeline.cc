@@ -36,6 +36,14 @@ Pipeline::Pipeline(const std::string &modelDir, const std::string &labelPath,con
       kpWidth = 96;
       kpHeight = 128;
         path = modelDir + "/tinypose_128x96_fp32.nb";
+    }else if(modelType==4){
+      kpWidth = 320;
+      kpHeight = 320;
+      path = modelDir + "/picodet_s_320_fp32.nb";
+    }else if(modelType==5){
+      kpWidth = 192;
+      kpHeight = 192;
+      path = modelDir + "/picodet_s_192_fp32.nb";
     }
   detector_keypoint_.reset(
       new Detector_KeyPoint(path, labelPath, cpuThreadNum, cpuPowerMode,

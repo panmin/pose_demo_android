@@ -85,6 +85,14 @@ public class SelectActivity extends Activity implements View.OnClickListener {
                     Native.MODEL_NAME_TYPE = 3;//"tinypose_128x96_fp32.nb";
                     break;
                 }
+                case R.id.rb4:{
+                    Native.MODEL_NAME_TYPE = 4;//"tinypose_128x96_fp32.nb";
+                    break;
+                }
+                case R.id.rb5:{
+                    Native.MODEL_NAME_TYPE = 5;//"tinypose_128x96_fp32.nb";
+                    break;
+                }
             }
         });
     }

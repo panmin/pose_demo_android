@@ -50,8 +50,7 @@
     <RadioGroup
         android:id="@+id/rg"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
         <RadioButton
             android:id="@+id/rb1"
             android:layout_width="wrap_content"
@@ -68,6 +67,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="128x96_fp32"/>
+        <RadioButton
+            android:id="@+id/rb4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="320_fp32"/>
+        <RadioButton
+            android:id="@+id/rb5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="192_fp32"/>
     </RadioGroup>
     <ScrollView
             android:layout_width="match_parent"
