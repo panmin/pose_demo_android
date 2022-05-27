@@ -17,7 +17,7 @@
 
 // Pipeline
 
-Pipeline::Pipeline(const std::string &modelDir, const std::string &labelPath,
+Pipeline::Pipeline(const std::string &modelDir, const std::string &labelPath,const int modelType,
                    const int cpuThreadNum, const std::string &cpuPowerMode,
                    int inputWidth, int inputHeight,
                    const std::vector<float> &inputMean,
@@ -25,9 +25,23 @@ Pipeline::Pipeline(const std::string &modelDir, const std::string &labelPath,
   detector_.reset(new Detector(modelDir, labelPath, cpuThreadNum, cpuPowerMode,
                                inputWidth, inputHeight, inputMean, inputStd,
                                scoreThreshold));
+  std::string path;
+  int kpWidth = 192;
+  int kpHeight = 256;
+    if (modelType==1){
+        path = modelDir + "/model_keypoint.nb";
+    }else if(modelType==2){
+        path = modelDir + "/tinypose_256x192_fp32.nb";
+    }else if(modelType==3){
+      kpWidth = 96;
+      kpHeight = 128;
+        path = modelDir + "/tinypose_128x96_fp32.nb";
+    }
   detector_keypoint_.reset(
-      new Detector_KeyPoint(modelDir, labelPath, cpuThreadNum, cpuPowerMode,
-                            192, 256, inputMean, inputStd, 0.2));
+      new Detector_KeyPoint(path, labelPath, cpuThreadNum, cpuPowerMode,
+                            kpWidth, kpHeight, inputMean, inputStd, 0.2));
+  index = 0;
+  avgTime = 0;
 }
 
 void Pipeline::VisualizeResults(const std::vector<RESULT> &results,
@@ -133,24 +147,36 @@ void Pipeline::VisualizeStatus(double readGLFBOTime, double writeGLTextureTime,
       cv::getTextSize(text, fontFace, fontScale, fontThickness, nullptr);
   textSize.height *= 1.25f;
   cv::Point2d offset(10, textSize.height + 15);
-  cv::putText(*rgbaImage, text, offset, fontFace, fontScale, fontColor,
-              fontThickness);
-  sprintf(text, "Write GLTexture time: %.1f ms", writeGLTextureTime);
+//  cv::putText(*rgbaImage, text, offset, fontFace, fontScale, fontColor,
+//              fontThickness);
+//  sprintf(text, "Write GLTexture time: %.1f ms", writeGLTextureTime);
+//  offset.y += textSize.height;
+//  cv::putText(*rgbaImage, text, offset, fontFace, fontScale, fontColor,
+//              fontThickness);
+//  sprintf(text, "Preprocess time: %.1f ms", preprocessTime);
+//  offset.y += textSize.height;
+//  cv::putText(*rgbaImage, text, offset, fontFace, fontScale, fontColor,
+//              fontThickness);
+//  sprintf(text, "Predict time: %.1f ms", predictTime);
+//  offset.y += textSize.height;
+//  cv::putText(*rgbaImage, text, offset, fontFace, fontScale, fontColor,
+//              fontThickness);
+//  sprintf(text, "Postprocess time: %.1f ms", postprocessTime);
+//  offset.y += textSize.height;
+//  cv::putText(*rgbaImage, text, offset, fontFace, fontScale, fontColor,
+//              fontThickness);
+  auto currentTime = writeGLTextureTime+preprocessTime+predictTime+postprocessTime;
+  sprintf(text, "current time: %.1f ms", currentTime);
   offset.y += textSize.height;
   cv::putText(*rgbaImage, text, offset, fontFace, fontScale, fontColor,
               fontThickness);
-  sprintf(text, "Preprocess time: %.1f ms", preprocessTime);
+  index = index + 1;
+  avgTime = (avgTime*(index-1)+currentTime)/index;
+  sprintf(text, "avg time: %.1f ms", avgTime);
   offset.y += textSize.height;
   cv::putText(*rgbaImage, text, offset, fontFace, fontScale, fontColor,
               fontThickness);
-  sprintf(text, "Predict time: %.1f ms", predictTime);
-  offset.y += textSize.height;
-  cv::putText(*rgbaImage, text, offset, fontFace, fontScale, fontColor,
-              fontThickness);
-  sprintf(text, "Postprocess time: %.1f ms", postprocessTime);
-  offset.y += textSize.height;
-  cv::putText(*rgbaImage, text, offset, fontFace, fontScale, fontColor,
-              fontThickness);
+  LOGE("current time=%.1f ms，avg time=%.1f ms",currentTime, avgTime);
 }
 
 void Pipeline::Action_Process(cv::Mat *rgbaImage,
@@ -194,10 +220,19 @@ bool Pipeline::Process(int inTexureId, int outTextureId, int textureWidth,
     detector_->Predict(rgbaImage, &results, &preprocessTime, &predictTime,
                        &postprocessTime);
   }
+//  if (results.size()>0){
+//    results[0].class_name
+//  }
   idx++;
-
+    std::vector<RESULT_KEYPOINT> results_kpts;
+  if (results.size()>0) {
+//    LOGE("person result=%lu，name=%s，score=%f", results.size(),results[0].class_name.c_str(),results[0].score);
+  }else{
+      WriteRGBAImageBackToGLTexture(rgbaImage, outTextureId, &writeGLTextureTime);
+    return true;
+  }
   // add keypoint pipeline
-  std::vector<RESULT_KEYPOINT> results_kpts;
+
   detector_keypoint_->Predict(rgbaImage, &results, &results_kpts,
                               &preprocessTime_kpts, &predictTime_kpts,
                               &postprocessTime_kpts, single);
@@ -207,8 +242,8 @@ bool Pipeline::Process(int inTexureId, int outTextureId, int textureWidth,
   VisualizeKptsResults(results, results_kpts, &rgbaImage, false);
 
   // Visualize the status(performance data) to the origin image
-//  VisualizeStatus(readGLFBOTime, writeGLTextureTime, preprocessTime+preprocessTime_kpts,
-//                  predictTime+predictTime_kpts, postprocessTime+postprocessTime_kpts, &rgbaImage, results_kpts, results);
+  VisualizeStatus(readGLFBOTime, writeGLTextureTime, preprocessTime+preprocessTime_kpts,
+                  predictTime+predictTime_kpts, postprocessTime+postprocessTime_kpts, &rgbaImage, results_kpts, results);
   Action_Process(&rgbaImage, results_kpts, results, actionid, single, textureWidth);
 
   // Dump modified image if savedImagePath is set

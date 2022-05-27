@@ -27,7 +27,7 @@ extern "C" {
  */
 JNIEXPORT jlong JNICALL
 Java_com_baidu_paddle_lite_demo_yolo_1detection_Native_nativeInit(
-    JNIEnv *env, jclass thiz, jstring jModelDir, jstring jLabelPath,
+    JNIEnv *env, jclass thiz, jstring jModelDir, jstring jLabelPath,jint modelType,
     jint cpuThreadNum, jstring jCPUPowerMode, jint inputWidth, jint inputHeight,
     jfloatArray jInputMean, jfloatArray jInputStd, jfloat scoreThreshold) {
   std::string modelDir = jstring_to_cpp_string(env, jModelDir);
@@ -36,7 +36,7 @@ Java_com_baidu_paddle_lite_demo_yolo_1detection_Native_nativeInit(
   std::vector<float> inputMean = jfloatarray_to_float_vector(env, jInputMean);
   std::vector<float> inputStd = jfloatarray_to_float_vector(env, jInputStd);
   return reinterpret_cast<jlong>(
-      new Pipeline(modelDir, labelPath, cpuThreadNum, cpuPowerMode, inputWidth,
+      new Pipeline(modelDir, labelPath,modelType, cpuThreadNum, cpuPowerMode, inputWidth,
                    inputHeight, inputMean, inputStd, scoreThreshold));
 }
 

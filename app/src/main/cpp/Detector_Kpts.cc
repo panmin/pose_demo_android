@@ -26,7 +26,7 @@ Detector_KeyPoint::Detector_KeyPoint(
     : inputWidth_(inputWidth), inputHeight_(inputHeight), inputMean_(inputMean),
       inputStd_(inputStd), scoreThreshold_(scoreThreshold) {
   paddle::lite_api::MobileConfig config;
-  config.set_model_from_file(modelDir + "/model_keypoint.nb");
+  config.set_model_from_file(modelDir /*+ "/model_keypoint.nb"*/);
 
   config.set_threads(cpuThreadNum);
   config.set_power_mode(ParsePowerMode(cpuPowerMode));
@@ -59,6 +59,7 @@ void Detector_KeyPoint::Preprocess(std::vector<cv::Mat> &bs_images) {
   // Set the data of input image
   int batchsize = bs_images.size();
   auto inputTensor = predictor_keypoint_->GetInput(0);
+//  LOGE("batchsize=%d, inputHeight_=%d, inputWidth_=%d", batchsize, inputHeight_,inputWidth_);
   std::vector<int64_t> inputShape = {batchsize, 3, inputHeight_, inputWidth_};
   inputTensor->Resize(inputShape);
   auto inputData = inputTensor->mutable_data<float>();

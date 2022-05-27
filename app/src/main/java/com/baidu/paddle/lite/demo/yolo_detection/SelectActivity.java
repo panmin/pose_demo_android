@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 public class SelectActivity extends Activity implements View.OnClickListener {
@@ -69,6 +70,23 @@ public class SelectActivity extends Activity implements View.OnClickListener {
         btn_back.setOnClickListener(this);
 
 
+        RadioGroup rg = findViewById(R.id.rg);
+        rg.setOnCheckedChangeListener((group, checkedId) -> {
+            switch (checkedId){
+                case R.id.rb1:{
+                    Native.MODEL_NAME_TYPE = 1;//"model_keypoint.nb";
+                    break;
+                }
+                case R.id.rb2:{
+                    Native.MODEL_NAME_TYPE = 2;//"tinypose_256x192_fp32.nb";
+                    break;
+                }
+                case R.id.rb3:{
+                    Native.MODEL_NAME_TYPE = 3;//"tinypose_128x96_fp32.nb";
+                    break;
+                }
+            }
+        });
     }
 
     @Override

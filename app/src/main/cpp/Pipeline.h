@@ -29,7 +29,10 @@
 
 class Pipeline {
 public:
-  Pipeline(const std::string &modelDir, const std::string &labelPath,
+    double avgTime = 0;
+    int index = 0;
+public:
+  Pipeline(const std::string &modelDir, const std::string &labelPath,const int modelType,
            const int cpuThreadNum, const std::string &cpuPowerMode,
            int inputWidth, int inputHeight, const std::vector<float> &inputMean,
            const std::vector<float> &inputStd, float scoreThreshold);

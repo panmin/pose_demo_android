@@ -164,6 +164,7 @@ public class TestActivity extends Activity implements View.OnClickListener, Came
             predictor.init(
                     realModelDir,
                     realLabelPath,
+                    Native.MODEL_NAME_TYPE,
                     SettingsActivity.cpuThreadNum,
                     SettingsActivity.cpuPowerMode,
                     SettingsActivity.inputWidth,

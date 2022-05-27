@@ -7,10 +7,12 @@ public class Native {
         System.loadLibrary("Native");
     }
 
+    public static int MODEL_NAME_TYPE = 1;
     private long ctx = 0;
 
     public boolean init(String modelDir,
                         String labelPath,
+                        int modelType,
                         int cpuThreadNum,
                         String cpuPowerMode,
                         int inputWidth,
@@ -21,6 +23,7 @@ public class Native {
         ctx = nativeInit(
                 modelDir,
                 labelPath,
+                modelType,
                 cpuThreadNum,
                 cpuPowerMode,
                 inputWidth,
@@ -55,6 +58,7 @@ public class Native {
 
     public static native long nativeInit(String modelDir,
                                          String labelPath,
+                                         int modelType,
                                          int cpuThreadNum,
                                          String cpuPowerMode,
                                          int inputWidth,

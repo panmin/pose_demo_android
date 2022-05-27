@@ -55,7 +55,7 @@ public class SingleActivity extends Activity implements View.OnClickListener, Ca
     private int pose;
 
     //时间选择器
-    private int timeSecond = 15;
+    private int timeSecond = 60*5;
     private TextView timeShow;
 
     Button btnPause;
@@ -399,6 +399,7 @@ public class SingleActivity extends Activity implements View.OnClickListener, Ca
             predictor.init(
                     realModelDir,
                     realLabelPath,
+                    Native.MODEL_NAME_TYPE,
                     SettingsActivity.cpuThreadNum,
                     SettingsActivity.cpuPowerMode,
                     SettingsActivity.inputWidth,
