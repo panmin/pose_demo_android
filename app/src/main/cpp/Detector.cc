@@ -22,13 +22,16 @@ Detector::Detector(const std::string &modelDir, const std::string &labelPath,
     : inputWidth_(inputWidth), inputHeight_(inputHeight), inputMean_(inputMean),
       inputStd_(inputStd), scoreThreshold_(scoreThreshold) {
   paddle::lite_api::MobileConfig config;
-  config.set_model_from_file(modelDir + "/model_det.nb");
+//  config.set_model_from_file(modelDir + "/model_det.nb");
+  config.set_model_from_file(modelDir + "/picodet_s_192_coco_ball_person_fp32.nb");
   config.set_threads(cpuThreadNum);
   config.set_power_mode(ParsePowerMode(cpuPowerMode));
   predictor_ =
       paddle::lite_api::CreatePaddlePredictor<paddle::lite_api::MobileConfig>(
           config);
 
+  std::string version = predictor_.get()->GetVersion();
+  LOGE("------version=%s-----",version.c_str());
   labelList_ = LoadLabelList(labelPath);
   colorMap_ = GenerateColorMap(labelList_.size());
 }
@@ -105,14 +108,17 @@ void Detector::Postprocess(std::vector<RESULT> *results) {
     int reg_max = 7;
     auto output_names = predictor_->GetOutputNames();
     for (int i = 0; i < output_names.size(); i++) {
+        LOGE("output_name=%s",output_names[i].c_str());
       auto output_tensor = predictor_->GetTensor(output_names[i]);
       const float *outptr = output_tensor->data<float>();
       std::vector<int64_t> output_shape = output_tensor->shape();
       if (i == 0) {
         num_class = output_shape[2];
+        LOGE("output_name=%s,---num_class=%d",output_names[i].c_str(),num_class);
       }
       if (i == fpn_stride_.size()) {
         reg_max = output_shape[2] / 4 - 1;
+        LOGE("output_name=%s,---reg_max=%d,---fpn_stride_.size()=%lu",output_names[i].c_str(),reg_max,fpn_stride_.size());
       }
       output_data_list_.push_back(outptr);
     }
@@ -277,6 +283,7 @@ void Detector::PicoDetPostProcess(std::vector<RESULT> *results,
       }
     }
   }
+//  LOGE("bbox_results size=%lu",bbox_results.size());
   for (int i = 0; i < (int)bbox_results.size(); i++) {
     nms(bbox_results[i], nms_threshold);
 
@@ -285,6 +292,7 @@ void Detector::PicoDetPostProcess(std::vector<RESULT> *results,
       box.w = box.w / scale_factor[1];
       box.y = box.y / scale_factor[0];
       box.h = box.h / scale_factor[0];
+      LOGE("class_name=%s,score=%f,xmin=%f,ymin=%f,xmax=%f,ymax=%f",box.class_name.c_str(),box.score,box.x,box.y,box.x+box.w,box.y+box.h);
       results->push_back(box);
     }
   }

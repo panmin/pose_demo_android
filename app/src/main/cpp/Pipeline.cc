@@ -22,9 +22,11 @@ Pipeline::Pipeline(const std::string &modelDir, const std::string &labelPath,con
                    int inputWidth, int inputHeight,
                    const std::vector<float> &inputMean,
                    const std::vector<float> &inputStd, float scoreThreshold) {
+    inputWidth = 192;
+    inputHeight = 192;
   detector_.reset(new Detector(modelDir, labelPath, cpuThreadNum, cpuPowerMode,
                                inputWidth, inputHeight, inputMean, inputStd,
-                               scoreThreshold));
+                               0.0/*scoreThreshold*/));
   std::string path;
   int kpWidth = 192;
   int kpHeight = 256;
@@ -220,7 +222,7 @@ bool Pipeline::Process(int inTexureId, int outTextureId, int textureWidth,
   cv::Mat rgbaImage;
   CreateRGBAImageFromGLFBOTexture(textureWidth, textureHeight, &rgbaImage,
                                   &readGLFBOTime);
-
+//    rgbaImage = cv::imread("/sdcard/a/1.png");
   // Feed the image, run inference and parse the results
   if (idx % 1 == 0 or results.empty()) {
     idx = 0;
@@ -228,6 +230,9 @@ bool Pipeline::Process(int inTexureId, int outTextureId, int textureWidth,
     detector_->Predict(rgbaImage, &results, &preprocessTime, &predictTime,
                        &postprocessTime);
   }
+    VisualizeResults(results, &rgbaImage);
+//  cv::imwrite("/sdcard/a/2.png",rgbaImage);
+
 //  if (results.size()>0){
 //    results[0].class_name
 //  }
@@ -246,7 +251,8 @@ bool Pipeline::Process(int inTexureId, int outTextureId, int textureWidth,
                               &postprocessTime_kpts, single);
 
   // Visualize the objects to the origin image
-//  VisualizeResults(results, &rgbaImage);
+    LOGE("results size=%lu",results.size());
+  VisualizeResults(results, &rgbaImage);
   VisualizeKptsResults(results, results_kpts, &rgbaImage, false);
 
   // Visualize the status(performance data) to the origin image
